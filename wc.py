@@ -62,16 +62,25 @@ def main():
 
     for FILE in args.FILE:
         try:
-            with open(FILE, "rb") as fp:
-                lines = 0
-                bites = 0
-                chars = 0
-                words = 0
-                for line in fp.readlines():
-                    lines = lines + 1
-                    bites = bites + len(line)
-                    chars = chars + len(line.decode())
-                    words = words + len([w for w in re.split(r'\s+', line.decode()) if 0 < len(w)])
+            lines = 0
+            bites = 0
+            chars = 0
+            words = 0
+            if '-' == FILE:
+                fp = sys.stdin
+            else:
+                fp = open(FILE, "rb")
+            for line in fp.readlines():
+                lines = lines + 1
+                bites = bites + len(line)
+                if '-' != FILE:
+                    dline = line.decode()
+                else:
+                    dline = line
+                chars = chars + len(dline)
+                words = words + len([w for w in re.split(r'\s+', dline) if 0 < len(w)])
+            if '-' != FILE:
+                fp.close()
             output = ""
             if args.lines:
                 output = "{1} {0}".format(lines, output)
@@ -84,6 +93,7 @@ def main():
             logger.info("{0} {1}".format(output, FILE))
         except Exception as e:
             logger.error("Could not access file {0}".format(FILE))
+            print(e)
     if args.version:
         logger.info("{0} 0.1".format(sys.argv[0]))
         exit(0)
